@@ -59,7 +59,7 @@ first, then reflect, then name the theory, then experiment.
 | `lesson.md` | Short reference: overview, key takeaways, review questions, where RL goes next |
 | `notebooks/01_rl_recommender_codealong.ipynb` | The lesson — build a recommender that learns from clicks |
 | `interactive/rl_explorer.html` | Interactive explainer — drag the `epsilon` dial and watch explore vs exploit live |
-| `slides/L11_slides_ntu.pptx` | NTU-template slide deck (25 slides, speaker notes) that follows the notebook's five parts |
+
 
 ## How to run
 
