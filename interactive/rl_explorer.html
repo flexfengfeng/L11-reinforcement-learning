@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L11 · Reinforcement Learning — Interactive Explainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ntu-navy:#1B2A4A; --ntu-dark:#1E3054; --ntu-blue:#2C5697; --ntu-blue-light:#3D6DB5;
+  --ntu-crimson:#C8102E; --ntu-crimson-dark:#A50D26;
+  --bg:#FFFFFF; --bg-off:#F4F5F7; --border:#DDE1E6; --border-light:#E8EAED;
+  --text:#1B2A4A; --text-body:#333D4D; --text-dim:#5F6B7A; --text-light:#8C95A1;
+  --green:#1A7A5C; --sup:#C2410C;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Open Sans',sans-serif;font-size:16px;line-height:1.7;color:var(--text-body);background:var(--bg)}
+.wrap{max-width:880px;margin:0 auto;padding:0 1.5rem}
+header.hero{background:var(--ntu-navy);color:#fff;border-bottom:6px solid var(--ntu-crimson);padding:2.6rem 0 2.2rem}
+header.hero .label{font-size:.7rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.6)}
+header.hero h1{font-weight:300;font-size:clamp(1.8rem,4vw,2.8rem);margin:.4rem 0 .3rem;line-height:1.2}
+header.hero h1 strong{color:var(--ntu-crimson);font-weight:700}
+header.hero p{color:rgba(255,255,255,.8);margin:.3rem 0 0;font-size:1rem}
+/* tabs */
+.tabs{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--border);padding:.8rem 0;display:flex;gap:.5rem;flex-wrap:wrap}
+.tab{font-family:inherit;font-size:.85rem;font-weight:600;border:1px solid var(--border);background:var(--bg-off);color:var(--text-dim);padding:.5rem 1rem;border-radius:999px;cursor:pointer;transition:.2s}
+.tab:hover{border-color:var(--ntu-blue-light);color:var(--ntu-blue)}
+.tab.active{background:var(--ntu-navy);color:#fff;border-color:var(--ntu-navy)}
+.part{display:none;padding:2rem 0 3rem;animation:fade .3s ease}
+.part.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+h2{color:var(--text);font-weight:300;font-size:clamp(1.4rem,3vw,2rem);margin:.2rem 0 .2rem}
+h2 em{font-style:italic;color:var(--ntu-crimson);font-weight:400}
+.kicker{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ntu-crimson)}
+h3{color:var(--text);font-size:1.1rem;margin:1.6rem 0 .5rem}
+.scenario{border-left:4px solid var(--ntu-crimson);background:var(--bg-off);padding:1rem 1.25rem;border-radius:0 4px 4px 0;margin:1rem 0 1.4rem}
+.scenario .who{font-size:.75rem;color:var(--text-dim);font-style:italic;margin-bottom:.3rem}
+.banners{display:flex;gap:.8rem;flex-wrap:wrap;margin:1.2rem 0}
+.banner{flex:1;min-width:150px;border:1px solid var(--border);border-top:4px solid var(--ntu-blue);border-radius:6px;padding:1rem;text-align:center;cursor:pointer;background:var(--bg);transition:.15s;user-select:none}
+.banner:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(27,42,74,.1)}
+.banner .name{font-weight:700;color:var(--text)}
+.banner .sub{font-size:.8rem;color:var(--text-dim)}
+.banner .stat{font-family:monospace;font-size:.85rem;margin-top:.5rem;color:var(--ntu-blue)}
+.banner.flash-click{border-top-color:var(--green);background:color-mix(in srgb,var(--green) 10%,#fff)}
+.banner.flash-noclick{border-top-color:var(--ntu-crimson);background:color-mix(in srgb,var(--ntu-crimson) 8%,#fff)}
+.btn{font-family:inherit;font-size:.9rem;font-weight:600;border:none;background:var(--ntu-crimson);color:#fff;padding:.55rem 1.1rem;border-radius:6px;cursor:pointer;transition:.2s;margin:.3rem .3rem .3rem 0}
+.btn:hover{background:var(--ntu-crimson-dark)}
+.btn.alt{background:var(--ntu-blue)}
+.btn.alt:hover{background:var(--ntu-blue-light)}
+.btn.ghost{background:var(--bg-off);color:var(--text-dim);border:1px solid var(--border)}
+.panel{border:1px solid var(--border);border-radius:8px;padding:1.2rem;background:var(--bg);margin:1.2rem 0}
+.readout{font-family:monospace;font-size:.9rem;background:var(--ntu-navy);color:#dfe6f0;padding:1rem;border-radius:6px;white-space:pre-wrap;overflow-x:auto;line-height:1.5}
+.readout b{color:#fff}
+.slider-row{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin:1rem 0}
+.slider-row label{font-weight:600;color:var(--text);min-width:230px}
+input[type=range]{flex:1;min-width:160px;accent-color:var(--ntu-crimson)}
+.epval{font-family:monospace;font-weight:700;color:var(--ntu-crimson);min-width:70px;text-align:right}
+canvas{width:100%;max-width:100%;height:auto;border:1px solid var(--border);border-radius:6px;background:#fff;margin-top:.6rem}
+table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.92rem}
+th,td{border:1px solid var(--border);padding:.55rem .7rem;text-align:left}
+th{background:var(--bg-off);color:var(--text);font-weight:700}
+td.mono{font-family:monospace}
+.callout{border-left:4px solid var(--ntu-crimson);background:var(--bg-off);padding:1rem 1.25rem;border-radius:0 4px 4px 0;margin:1.4rem 0}
+.callout .tag{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ntu-crimson);display:block;margin-bottom:.3rem}
+.legend{display:flex;gap:1.2rem;flex-wrap:wrap;font-size:.8rem;color:var(--text-dim);margin-top:.5rem}
+.legend span{display:inline-flex;align-items:center;gap:.4rem}
+.dot{width:14px;height:3px;border-radius:2px;display:inline-block}
+.stretch-badge{display:inline-block;font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:color-mix(in srgb,var(--sup) 14%,transparent);color:var(--sup);padding:.2em .6em;border-radius:3px;margin-left:.5rem}
+.qcell{transition:.2s}
+.qbest{background:color-mix(in srgb,var(--green) 16%,#fff);font-weight:700}
+footer{border-top:1px solid var(--border);padding:1.5rem 0;color:var(--text-light);font-size:.8rem;text-align:center}
+</style>
+</head>
+<body>
+<header class="hero"><div class="wrap">
+  <div class="label">(SCTP) Advanced Professional Certificate · NTU · Module 3</div>
+  <h1>L11 — Reinforcement Learning: the recommender that <strong>learns from clicks</strong></h1>
+  <p>Interactive explainer · NorthStar Retail case · do first, theory after</p>
+</div></header>
+
+<div class="tabs wrap" style="max-width:880px">
+  <button class="tab active" data-part="0">1 · The problem</button>
+  <button class="tab" data-part="1">2 · Explore vs exploit</button>
+  <button class="tab" data-part="2">3 · The theory</button>
+  <button class="tab" data-part="3">4 · Add context <span style="opacity:.7">(stretch)</span></button>
+</div>
+
+<main class="wrap">
+
+<!-- PART 0 -->
+<section class="part active" id="part0">
+  <div class="kicker">Concrete experience</div>
+  <h2>Every banner is a <em>bet</em>.</h2>
+  <div class="scenario">
+    <div class="who">Sarah Chen · Customer Experience Analyst · NorthStar Retail</div>
+    The homepage can show one of three banners to each visitor. They click (good) or they don't.
+    Nobody told us which banner is best — we only learn by showing them and watching.
+    <strong>Click a banner below to "show it" to a visitor and see what happens.</strong>
+  </div>
+  <div class="banners" id="banners0"></div>
+  <button class="btn alt" id="auto100">Show to 100 random visitors</button>
+  <button class="btn ghost" id="reset0">Reset</button>
+  <div class="readout" id="out0">Click a banner to show it to one visitor…</div>
+  <div class="callout"><span class="tag">The catch</span>
+    Each banner has a hidden true click rate. The only way to find the best one is to spend visitors
+    trying them — but every visitor you spend on a weak banner is a click you probably lost. That
+    trade-off is the whole game. Head to Part 2 to let an agent solve it.</div>
+</section>
+
+<!-- PART 1 -->
+<section class="part" id="part1">
+  <div class="kicker">Active experimentation</div>
+  <h2>One dial: <em>explore</em> vs <em>exploit</em>.</h2>
+  <p>An <b>ε-greedy</b> agent mostly shows the best banner so far, but explores a random one a fraction
+  of the time. That fraction is <b>epsilon (ε)</b>. Drag the slider, run the simulation, and watch the
+  agent's click rate climb as it learns.</p>
+  <div class="panel">
+    <div class="slider-row">
+      <label for="eps">Exploration rate (ε)</label>
+      <input type="range" id="eps" min="0" max="100" value="10">
+      <span class="epval" id="epsval">0.10</span>
+    </div>
+    <div style="font-size:.82rem;color:var(--text-dim);margin-top:-.4rem">
+      ε = 0 → never explore (risky) · ε = 1.00 → always random (the baseline) · small values usually win.
+    </div>
+    <button class="btn" id="run1">Run 3,000 visitors</button>
+    <button class="btn ghost" id="reset1">Clear</button>
+    <canvas id="chart" width="820" height="320"></canvas>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--ntu-blue)"></i> agent's click rate</span>
+      <span><i class="dot" style="background:var(--green)"></i> best-banner ceiling (11%)</span>
+      <span><i class="dot" style="background:var(--ntu-crimson)"></i> random baseline (8%)</span>
+    </div>
+    <div class="readout" id="out1" style="margin-top:1rem">Set ε, then press “Run 3,000 visitors”.</div>
+  </div>
+  <div class="callout"><span class="tag">Try this</span>
+    Run ε = 0 a few times — after showing each banner once, the agent usually locks onto whichever one
+    got lucky first, and the line stays flat and low. Even ε = 0.10 misses B now and then, because B (11%)
+    and C (8%) are close. That fragility is exactly why a little exploration is worth paying for.</div>
+</section>
+
+<!-- PART 2 -->
+<section class="part" id="part2">
+  <div class="kicker">Abstract concepts</div>
+  <h2>The same loop runs <em>everything</em>.</h2>
+  <p>Every reinforcement learning system is one loop repeated thousands of times:</p>
+  <div class="callout" style="border-left-color:var(--ntu-blue)">
+    An <b>agent</b> looks at its situation, takes an <b>action</b>, gets a <b>reward</b>,
+    and <b>updates</b> how it will act next time.
+  </div>
+  <table>
+    <tr><th>Term</th><th>Plain English</th><th>In the banner demo</th></tr>
+    <tr><td><b>Agent</b></td><td>The learner / decision-maker</td><td>The ε-greedy logic</td></tr>
+    <tr><td><b>Environment</b></td><td>The world it acts on</td><td>NorthStar visitors</td></tr>
+    <tr><td><b>Action</b></td><td>A choice it can make</td><td>Show banner A, B or C</td></tr>
+    <tr><td><b>Reward</b></td><td>Feedback — bigger is better</td><td>1 for a click, 0 for none</td></tr>
+    <tr><td><b>Policy</b></td><td>Its strategy for choosing</td><td>“90% best, 10% explore”</td></tr>
+    <tr><td><b>Value estimate</b></td><td>Belief about how good each action is</td><td>Estimated click rate per banner</td></tr>
+  </table>
+  <h3>Explore vs exploit — the idea worth keeping</h3>
+  <p><b>Exploit</b> = use what you know to earn reward now. <b>Explore</b> = give up a little reward now
+  to learn something that pays later. Too little exploration and you lock onto a mediocre choice; too much
+  and you keep gambling on weak options. ε is literally the knob for this balance.</p>
+  <h3>How is this different from supervised learning?</h3>
+  <table>
+    <tr><th></th><th>Supervised (L01–L04)</th><th>Reinforcement (today)</th></tr>
+    <tr><td><b>Given</b></td><td>Inputs <em>with</em> correct answers</td><td>No answer key — only rewards</td></tr>
+    <tr><td><b>Feedback</b></td><td>“The right label was X”</td><td>“That choice earned 1” (never the best)</td></tr>
+    <tr><td><b>Sarah example</b></td><td>Classify a review +/–</td><td>Learn which banner earns clicks</td></tr>
+  </table>
+  <div class="callout"><span class="tag">Key takeaway</span>
+    Reinforcement learning = learning a <b>policy</b> (a habit of acting) from <b>rewards</b>
+    (feedback on actions), while balancing <b>exploration</b> against <b>exploitation</b>.
+    Everything else is detail.</div>
+</section>
+
+<!-- PART 3 -->
+<section class="part" id="part3">
+  <div class="kicker">Stretch <span class="stretch-badge">optional</span></div>
+  <h2>Different visitors, <em>different</em> best banners.</h2>
+  <p>So far the agent showed one banner to everyone. Real recommenders use <b>context</b> — something
+  known about the situation before choosing. Here the agent sees whether a visitor is <b>new</b> or
+  <b>returning</b>, and keeps a <b>Q-table</b>: a score for each banner <em>per visitor type</em>
+  (“Q” = estimated quality of an action in a situation). Run it and watch two different winners emerge.</p>
+  <div class="panel">
+    <button class="btn" id="run3">Run 8,000 visitors</button>
+    <button class="btn ghost" id="reset3">Clear</button>
+    <table id="qtable" style="margin-top:1rem">
+      <tr><th>Visitor type</th><th>A · New arrivals</th><th>B · 50% off</th><th>C · Trending</th><th>Agent shows</th></tr>
+      <tr><td><b>New</b></td><td class="mono qcell" id="q00">—</td><td class="mono qcell" id="q01">—</td><td class="mono qcell" id="q02">—</td><td id="qb0">—</td></tr>
+      <tr><td><b>Returning</b></td><td class="mono qcell" id="q10">—</td><td class="mono qcell" id="q11">—</td><td class="mono qcell" id="q12">—</td><td id="qb1">—</td></tr>
+    </table>
+  </div>
+  <div class="callout"><span class="tag">Where this leads</span>
+    Add the idea that your action changes the <em>next</em> situation, and you reach full reinforcement
+    learning — optimising long-term reward over a <em>sequence</em> of decisions (chess, robotics, checkout
+    flows). The same loop, scaled up, is also how modern chatbots are tuned: <b>RLHF</b> asks people which of two
+    answers they prefer, trains a reward model on those choices, and uses it as the reward. You've just built the engine it's all based on.</div>
+</section>
+
+</main>
+<footer class="wrap">NTU SCTP · Module 3 · L11 Reinforcement Learning · companion to <code>01_rl_recommender_codealong.ipynb</code></footer>
+
+<script>
+// ---- tab switching ----
+const tabs=[...document.querySelectorAll('.tab')], parts=[...document.querySelectorAll('.part')];
+tabs.forEach(t=>t.onclick=()=>{tabs.forEach(x=>x.classList.remove('active'));parts.forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');parts[+t.dataset.part].classList.add('active');});
+
+// ---- shared world ----
+const NAMES=["A · New arrivals","B · 50% off","C · Trending now"];
+const SUBS=["New arrivals","Up to 50% off","Trending now"];
+const TRUE=[0.05,0.11,0.08];
+const show=i=>Math.random()<TRUE[i]?1:0;
+
+// ---- PART 0 ----
+let shown0=[0,0,0], clicks0=[0,0,0];
+const bWrap=document.getElementById('banners0');
+function drawBanners(){
+  bWrap.innerHTML='';
+  for(let i=0;i<3;i++){
+    const d=document.createElement('div');d.className='banner';d.dataset.i=i;
+    const rate=shown0[i]?(clicks0[i]/shown0[i]*100).toFixed(1)+'%':'—';
+    d.innerHTML=`<div class="name">${NAMES[i].split(' · ')[0]}</div><div class="sub">${SUBS[i]}</div>
+      <div class="stat">shown ${shown0[i]} · clicks ${clicks0[i]}<br>observed ${rate}</div>`;
+    d.onclick=()=>visit(i);bWrap.appendChild(d);
+  }
+}
+function visit(i){
+  const r=show(i);shown0[i]++;clicks0[i]+=r;
+  const card=bWrap.children[i];
+  card.classList.add(r?'flash-click':'flash-noclick');
+  setTimeout(()=>card.classList.remove('flash-click','flash-noclick'),350);
+  drawBanners();
+  document.getElementById('out0').innerHTML=
+    `Showed <b>${NAMES[i]}</b> → visitor ${r?'<b>CLICKED ✓</b>':'did not click ✗'}\n`+
+    `Totals: shown ${shown0.reduce((a,b)=>a+b)}, clicks ${clicks0.reduce((a,b)=>a+b)}`;
+}
+document.getElementById('auto100').onclick=()=>{
+  for(let k=0;k<100;k++){const i=Math.floor(Math.random()*3);shown0[i]++;clicks0[i]+=show(i);}
+  drawBanners();
+  const ts=shown0.reduce((a,b)=>a+b),tc=clicks0.reduce((a,b)=>a+b);
+  document.getElementById('out0').innerHTML=
+    `Showed 100 banners <b>at random</b>.\nTotal shown ${ts}, clicks ${tc} → click rate <b>${(tc/ts*100).toFixed(1)}%</b>\n`+
+    `Random spreads visitors evenly — it wastes them on weak banners. Part 2 does better.`;
+};
+document.getElementById('reset0').onclick=()=>{shown0=[0,0,0];clicks0=[0,0,0];drawBanners();
+  document.getElementById('out0').textContent='Click a banner to show it to one visitor…';};
+drawBanners();
+
+// ---- PART 1: epsilon-greedy + canvas chart ----
+const eps=document.getElementById('eps'),epsval=document.getElementById('epsval');
+eps.oninput=()=>epsval.textContent=(eps.value/100).toFixed(2);
+const cv=document.getElementById('chart'),ctx=cv.getContext('2d');
+function clearChart(){
+  ctx.clearRect(0,0,cv.width,cv.height);
+  const W=cv.width,H=cv.height,pad=42;
+  ctx.strokeStyle='#DDE1E6';ctx.lineWidth=1;
+  ctx.strokeRect(pad,10,W-pad-10,H-pad-10);
+  ctx.fillStyle='#5F6B7A';ctx.font='12px Open Sans';
+  // y axis 0..15%
+  for(let p=0;p<=15;p+=5){const y=10+(H-pad-20)*(1-p/15);
+    ctx.fillText(p+'%',8,y+4);ctx.strokeStyle='#E8EAED';
+    ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(W-10,y);ctx.stroke();}
+  ctx.fillText('visitors →',W/2-30,H-12);
+  // ceiling + baseline
+  const yOf=v=>10+(H-pad-20)*(1-v*100/15);
+  ctx.setLineDash([6,4]);
+  ctx.strokeStyle='#1A7A5C';ctx.beginPath();ctx.moveTo(pad,yOf(0.11));ctx.lineTo(W-10,yOf(0.11));ctx.stroke();
+  ctx.strokeStyle='#C8102E';ctx.beginPath();ctx.moveTo(pad,yOf(0.08));ctx.lineTo(W-10,yOf(0.08));ctx.stroke();
+  ctx.setLineDash([]);
+}
+function runEG(n,e){
+  let counts=[0,0,0],est=[0,0,0],cum=0,curve=[];
+  for(let t=0;t<n;t++){
+    let c;
+    if(t<3)c=t;                                  // warm-up: show each banner once
+    else if(Math.random()<e)c=Math.floor(Math.random()*3);
+    else c=est.indexOf(Math.max(...est));
+    const r=show(c);counts[c]++;est[c]+=(r-est[c])/counts[c];cum+=r;
+    curve.push(cum/(t+1));
+  }
+  return {est,counts,curve};
+}
+function plotCurve(curve){
+  const W=cv.width,H=cv.height,pad=42,n=curve.length;
+  const xOf=i=>pad+(W-pad-10)*(i/(n-1));
+  const yOf=v=>10+(H-pad-20)*(1-v*100/15);
+  ctx.strokeStyle='#2C5697';ctx.lineWidth=2;ctx.beginPath();
+  curve.forEach((v,i)=>{i?ctx.lineTo(xOf(i),yOf(v)):ctx.moveTo(xOf(i),yOf(v));});
+  ctx.stroke();
+}
+document.getElementById('run1').onclick=()=>{
+  const e=eps.value/100,n=3000;clearChart();
+  const {est,counts,curve}=runEG(n,e);plotCurve(curve);
+  const final=curve[curve.length-1];
+  document.getElementById('out1').innerHTML=
+    `ε = <b>${e.toFixed(2)}</b> · ${n} visitors\n`+
+    `Final click rate: <b>${(final*100).toFixed(2)}%</b>  (random ≈ 8%, ceiling = 11%)\n`+
+    `Estimated rates → A ${(est[0]*100).toFixed(1)}% · B ${(est[1]*100).toFixed(1)}% · C ${(est[2]*100).toFixed(1)}%\n`+
+    `Times shown    → A ${counts[0]} · B ${counts[1]} · C ${counts[2]}\n`+
+    (counts[1]>=counts[0]&&counts[1]>=counts[2]
+      ?`The agent found B (the real winner) and leaned into it. ✓`
+      :`Hmm — the agent did NOT settle on B. With low ε it can get stuck. Run again or raise ε a little.`);
+};
+document.getElementById('reset1').onclick=()=>{clearChart();
+  document.getElementById('out1').textContent='Set ε, then press “Run 3,000 visitors”.';};
+clearChart();
+
+// ---- PART 3: contextual bandit ----
+const TRUE2=[[0.04,0.12,0.06],[0.10,0.05,0.13]];
+const TYPES=["new","returning"];
+document.getElementById('run3').onclick=()=>{
+  let Q=[[0,0,0],[0,0,0]],C=[[0,0,0],[0,0,0]],n=8000,e=0.1;
+  for(let t=0;t<n;t++){
+    const vt=Math.floor(Math.random()*2);
+    let c;
+    if(Math.random()<e)c=Math.floor(Math.random()*3);
+    else c=Q[vt].indexOf(Math.max(...Q[vt]));
+    const r=Math.random()<TRUE2[vt][c]?1:0;
+    C[vt][c]++;Q[vt][c]+=(r-Q[vt][c])/C[vt][c];
+  }
+  for(let vt=0;vt<2;vt++){
+    const best=Q[vt].indexOf(Math.max(...Q[vt]));
+    for(let b=0;b<3;b++){
+      const cell=document.getElementById('q'+vt+b);
+      cell.textContent=(Q[vt][b]*100).toFixed(1)+'%';
+      cell.classList.toggle('qbest',b===best);
+    }
+    document.getElementById('qb'+vt).innerHTML='<b>'+NAMES[best].split(' · ')[0]+'</b>';
+  }
+};
+document.getElementById('reset3').onclick=()=>{
+  for(let vt=0;vt<2;vt++){for(let b=0;b<3;b++){const c=document.getElementById('q'+vt+b);c.textContent='—';c.classList.remove('qbest');}
+    document.getElementById('qb'+vt).textContent='—';}
+};
+</script>
+</body>
+</html>
