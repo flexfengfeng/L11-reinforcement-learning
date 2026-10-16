@@ -10,8 +10,7 @@ learners asked for "just enough RL to know what it is and how it differs from wh
 built." This lesson is that: a single hands-on code-along (60–90 minutes — Parts 1–4 are the ~70-minute core, Part 5 is an optional stretch) where you build a
 recommender that learns from clicks, plus an interactive explainer you can play with.
 
-It is **lighter than L01–L10 on purpose.** There is no assignment and no quiz — just one notebook, one interactive page, and a short
-slide deck to run the session from. Treat it as a guided taster, not a full
+It is **lighter than L01–L10 on purpose.** There is no assignment and no quiz — the learner materials are one notebook, one interactive page, and short reference notes. Treat it as a guided taster, not a full
 module.
 
 ## Where it sits in the story
@@ -23,9 +22,12 @@ One more chapter for Sarah Chen at NorthStar Retail — set *after* the main arc
 > on its own* as real shoppers click. Nobody has a labelled "correct banner" list. The
 > system has to learn by trying.
 
-That last sentence is the whole reason this is a **reinforcement learning** problem, not a
-supervised one. Every model in L01–L10 learned from an answer key. Here there is no answer
-key — the only feedback is whether each visitor clicked.
+That last sentence points toward a **reinforcement learning** problem. More precisely, this
+is a **multi-armed bandit**: a simple, stateless RL
+setting where the agent repeatedly chooses one action, observes that action's reward, and
+then chooses again. A click log can still contain labels, and the absence of labels alone
+does not prove that RL is the right tool. The distinctive feature here is that the agent
+chooses which banner to show, and that choice determines which feedback it gets.
 
 ## What you'll learn
 
@@ -34,8 +36,8 @@ By the end you will be able to:
 1. **Name the RL loop** — agent → action → reward → update, repeated thousands of times.
 2. **Explain the six core words** — agent, environment, action, reward, policy, value — each tied to code you actually ran.
 3. **Describe the explore-vs-exploit trade-off** — and point to the single dial (`epsilon`) that controls it.
-4. **Say clearly how RL differs from supervised learning** — no labels; the agent learns from the reward of what it tried.
-5. **(Optional)** Recognise a **contextual bandit** and the **Q-table**, and see how the same loop scales up to full RL and to RLHF behind modern chatbots.
+4. **Say clearly how this bandit differs from supervised learning** — the agent chooses an action, receives feedback for that choice, and improves its future choices.
+5. **(Optional)** Recognise a **contextual bandit** and its context-action value table, and see how the same loop scales up to sequential RL and to RLHF behind modern chatbots.
 
 ## How it's taught — one Kolb cycle, five parts
 
@@ -48,7 +50,7 @@ first, then reflect, then name the theory, then experiment.
 | **2 — Look at it** | Reflective observation | Three questions about what just happened, then compare with Sarah's take | ~10 min |
 | **3 — Name it** | Abstract conceptualisation | The theory in plain English — every term mapped to your code | ~20 min |
 | **4 — Tinker** | Active experimentation | Turn the `epsilon` dial, change the world, watch behaviour shift | ~15 min |
-| **5 — Go deeper** *(optional)* | Stretch | Add context → contextual bandit → the Q-table → where full RL leads | ~20 min |
+| **5 — Go deeper** *(optional)* | Stretch | Add context → contextual bandit → an action-value table → where full RL leads | ~20 min |
 
 ## Files
 
@@ -63,8 +65,36 @@ first, then reflect, then name the theory, then experiment.
 
 ## How to run
 
-Open `notebooks/01_rl_recommender_codealong.ipynb` in VS Code with the `dsai-m3` kernel and
-run every cell top to bottom. It uses only `numpy` and `matplotlib` — no new installs, no
-GPU, no model downloads. The notebook runs in seconds on any laptop.
+Create a fresh environment if needed, then open
+`notebooks/01_rl_recommender_codealong.ipynb` in VS Code:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+python -m pip install -r requirements.txt
+```
+
+The examples use `numpy` and `matplotlib`; `ipykernel` supports notebook execution,
+and `nbformat`/`nbclient` support automated checks. In VS Code, install the Python and
+Jupyter extensions, select the `.venv` kernel, and run every cell top to bottom.
+A separate Jupyter server application is optional. There is no GPU or model download, and the notebook runs in
+seconds on any laptop.
+
+The slide deck is instructor-only and is not distributed with this repository. The
+notebook, this reference, and the interactive page are the learner materials.
 
 Prefer to explore without code first? Open `interactive/rl_explorer.html` in any browser.
+
+## Checks
+
+With the environment above active:
+
+```bash
+python -m unittest discover -s tests -v
+node tests/test_explorer.cjs
+```
+
+The JavaScript check needs Node.js and no npm packages. It checks simulation and event
+handler behavior using a minimal DOM stub; it does not replace visual browser checks.
+For full notebook validation, run all cells in a fresh kernel. Saved outputs are from
+a complete run; individual experiments use explicit seeds and report stochastic variability.

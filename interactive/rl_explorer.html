@@ -38,7 +38,10 @@ h3{color:var(--text);font-size:1.1rem;margin:1.6rem 0 .5rem}
 .scenario .who{font-size:.75rem;color:var(--text-dim);font-style:italic;margin-bottom:.3rem}
 .banners{display:flex;gap:.8rem;flex-wrap:wrap;margin:1.2rem 0}
 .banner{flex:1;min-width:150px;border:1px solid var(--border);border-top:4px solid var(--ntu-blue);border-radius:6px;padding:1rem;text-align:center;cursor:pointer;background:var(--bg);transition:.15s;user-select:none}
+.banner{font:inherit;color:inherit;display:block}
 .banner:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(27,42,74,.1)}
+.banner:focus-visible,.btn:focus-visible,.tab:focus-visible,input:focus-visible{outline:3px solid var(--ntu-crimson);outline-offset:2px}
+.banner .name,.banner .sub,.banner .stat{display:block}
 .banner .name{font-weight:700;color:var(--text)}
 .banner .sub{font-size:.8rem;color:var(--text-dim)}
 .banner .stat{font-family:monospace;font-size:.85rem;margin-top:.5rem;color:var(--ntu-blue)}
@@ -69,7 +72,13 @@ td.mono{font-family:monospace}
 .stretch-badge{display:inline-block;font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:color-mix(in srgb,var(--sup) 14%,transparent);color:var(--sup);padding:.2em .6em;border-radius:3px;margin-left:.5rem}
 .qcell{transition:.2s}
 .qbest{background:color-mix(in srgb,var(--green) 16%,#fff);font-weight:700}
+.chart-alt{font-size:.82rem;color:var(--text-dim);margin-top:.5rem}
 footer{border-top:1px solid var(--border);padding:1.5rem 0;color:var(--text-light);font-size:.8rem;text-align:center}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+  .part{animation:none}
+  .banner:hover{transform:none}
+}
 </style>
 </head>
 <body>
@@ -80,28 +89,28 @@ footer{border-top:1px solid var(--border);padding:1.5rem 0;color:var(--text-ligh
 </div></header>
 
 <div class="tabs wrap" style="max-width:880px">
-  <button class="tab active" data-part="0">1 · The problem</button>
-  <button class="tab" data-part="1">2 · Explore vs exploit</button>
-  <button class="tab" data-part="2">3 · The theory</button>
-  <button class="tab" data-part="3">4 · Add context <span style="opacity:.7">(stretch)</span></button>
+  <button class="tab active" id="tab0" data-part="0" aria-controls="part0" aria-pressed="true">1 · The problem</button>
+  <button class="tab" id="tab1" data-part="1" aria-controls="part1" aria-pressed="false">2 · Explore vs exploit</button>
+  <button class="tab" id="tab2" data-part="2" aria-controls="part2" aria-pressed="false">3 · The theory</button>
+  <button class="tab" id="tab3" data-part="3" aria-controls="part3" aria-pressed="false">4 · Add context <span style="opacity:.7">(stretch)</span></button>
 </div>
 
 <main class="wrap">
 
 <!-- PART 0 -->
-<section class="part active" id="part0">
+<section class="part active" id="part0" aria-labelledby="tab0">
   <div class="kicker">Concrete experience</div>
   <h2>Every banner is a <em>bet</em>.</h2>
   <div class="scenario">
     <div class="who">Sarah Chen · Customer Experience Analyst · NorthStar Retail</div>
     The homepage can show one of three banners to each visitor. They click (good) or they don't.
-    Nobody told us which banner is best — we only learn by showing them and watching.
+    This is a multi-armed bandit: each independent round is one banner choice and one click reward. We learn by showing banners and watching.
     <strong>Click a banner below to "show it" to a visitor and see what happens.</strong>
   </div>
   <div class="banners" id="banners0"></div>
   <button class="btn alt" id="auto100">Show to 100 random visitors</button>
   <button class="btn ghost" id="reset0">Reset</button>
-  <div class="readout" id="out0">Click a banner to show it to one visitor…</div>
+  <div class="readout" id="out0" role="status" aria-live="polite">Click a banner to show it to one visitor…</div>
   <div class="callout"><span class="tag">The catch</span>
     Each banner has a hidden true click rate. The only way to find the best one is to spend visitors
     trying them — but every visitor you spend on a weak banner is a click you probably lost. That
@@ -109,12 +118,13 @@ footer{border-top:1px solid var(--border);padding:1.5rem 0;color:var(--text-ligh
 </section>
 
 <!-- PART 1 -->
-<section class="part" id="part1">
+<section class="part" id="part1" aria-labelledby="tab1">
   <div class="kicker">Active experimentation</div>
   <h2>One dial: <em>explore</em> vs <em>exploit</em>.</h2>
   <p>An <b>ε-greedy</b> agent mostly shows the best banner so far, but explores a random one a fraction
-  of the time. That fraction is <b>epsilon (ε)</b>. Drag the slider, run the simulation, and watch the
-  agent's click rate climb as it learns.</p>
+  of the time. That fraction is <b>epsilon (ε)</b>. Drag the slider, run a finite simulation, and inspect
+  how the policy, traffic, and click rate behave. A single run is noisy: learning does not guarantee that
+  the line rises or that the agent identifies the true best banner.</p>
   <div class="panel">
     <div class="slider-row">
       <label for="eps">Exploration rate (ε)</label>
@@ -122,29 +132,38 @@ footer{border-top:1px solid var(--border);padding:1.5rem 0;color:var(--text-ligh
       <span class="epval" id="epsval">0.10</span>
     </div>
     <div style="font-size:.82rem;color:var(--text-dim);margin-top:-.4rem">
-      ε = 0 → never explore (risky) · ε = 1.00 → always random (the baseline) · small values usually win.
+      ε = 0 → never explore (risky) · ε = 1.00 → always random (the baseline) · compare settings across seeds; there is no universal best ε.
+    </div>
+    <div class="slider-row">
+      <label for="seed1">Random seed</label>
+      <input type="number" id="seed1" value="20261016" step="1" inputmode="numeric">
+      <span style="font-size:.82rem;color:var(--text-dim)">Same seed + settings reproduces a run.</span>
     </div>
     <button class="btn" id="run1">Run 3,000 visitors</button>
+    <button class="btn alt" id="compare1">Compare 50 seeded runs</button>
     <button class="btn ghost" id="reset1">Clear</button>
-    <canvas id="chart" width="820" height="320"></canvas>
+    <canvas id="chart" width="820" height="320" role="img" aria-label="Click-rate chart for the latest finite simulation" aria-describedby="chartAlt"></canvas>
+    <div class="chart-alt" id="chartAlt">Text alternative: no simulation has been run. The chart will show actual cumulative click rate against the expected random rate (8%) and the expected oracle rate (11%).</div>
     <div class="legend">
       <span><i class="dot" style="background:var(--ntu-blue)"></i> agent's click rate</span>
-      <span><i class="dot" style="background:var(--green)"></i> best-banner ceiling (11%)</span>
-      <span><i class="dot" style="background:var(--ntu-crimson)"></i> random baseline (8%)</span>
+      <span><i class="dot" style="background:var(--green)"></i> oracle expected rate (11%)</span>
+      <span><i class="dot" style="background:var(--ntu-crimson)"></i> random expected rate (8%)</span>
     </div>
-    <div class="readout" id="out1" style="margin-top:1rem">Set ε, then press “Run 3,000 visitors”.</div>
+    <div class="readout" id="out1" role="status" aria-live="polite" style="margin-top:1rem">Set ε, then press “Run 3,000 visitors”.</div>
   </div>
   <div class="callout"><span class="tag">Try this</span>
-    Run ε = 0 a few times — after showing each banner once, the agent usually locks onto whichever one
-    got lucky first, and the line stays flat and low. Even ε = 0.10 misses B now and then, because B (11%)
-    and C (8%) are close. That fragility is exactly why a little exploration is worth paying for.</div>
+    Run ε = 0 a few times — after showing each banner once, the agent can lock onto a banner whose first
+    outcome was lucky, and the line can stay flat and low. Even ε = 0.10 can miss B in a finite run, because
+    B (11%) and C (8%) are close. That fragility is why a little exploration can be worth paying for.</div>
 </section>
 
 <!-- PART 2 -->
-<section class="part" id="part2">
+<section class="part" id="part2" aria-labelledby="tab2">
   <div class="kicker">Abstract concepts</div>
-  <h2>The same loop runs <em>everything</em>.</h2>
-  <p>Every reinforcement learning system is one loop repeated thousands of times:</p>
+  <h2>A shared loop: <em>act, observe, update</em>.</h2>
+  <p>This demo is a <b>multi-armed bandit</b>: a one-step, stateless reinforcement-learning setting.
+    The agent chooses one action, observes that action's reward, and starts the next independent round.
+    More general reinforcement-learning tasks can include a changing state and delayed rewards.</p>
   <div class="callout" style="border-left-color:var(--ntu-blue)">
     An <b>agent</b> looks at its situation, takes an <b>action</b>, gets a <b>reward</b>,
     and <b>updates</b> how it will act next time.
@@ -159,44 +178,52 @@ footer{border-top:1px solid var(--border);padding:1.5rem 0;color:var(--text-ligh
     <tr><td><b>Value estimate</b></td><td>Belief about how good each action is</td><td>Estimated click rate per banner</td></tr>
   </table>
   <h3>Explore vs exploit — the idea worth keeping</h3>
-  <p><b>Exploit</b> = use what you know to earn reward now. <b>Explore</b> = give up a little reward now
-  to learn something that pays later. Too little exploration and you lock onto a mediocre choice; too much
+  <p><b>Exploit</b> = use what you know to earn reward now. <b>Explore</b> = try actions to gain information, potentially sacrificing immediate reward. Too little exploration and you can lock onto a mediocre choice; too much
   and you keep gambling on weak options. ε is literally the knob for this balance.</p>
   <h3>How is this different from supervised learning?</h3>
   <table>
     <tr><th></th><th>Supervised (L01–L04)</th><th>Reinforcement (today)</th></tr>
-    <tr><td><b>Given</b></td><td>Inputs <em>with</em> correct answers</td><td>No answer key — only rewards</td></tr>
+    <tr><td><b>Given</b></td><td>Examples with correct target labels</td><td>No correct-action label; observe a reward for the action selected</td></tr>
     <tr><td><b>Feedback</b></td><td>“The right label was X”</td><td>“That choice earned 1” (never the best)</td></tr>
     <tr><td><b>Sarah example</b></td><td>Classify a review +/–</td><td>Learn which banner earns clicks</td></tr>
   </table>
+  <p>A missing answer key by itself does not define reinforcement learning; unsupervised methods also work without labels.
+    What makes this an RL example is the repeated action → reward loop and the policy objective.</p>
   <div class="callout"><span class="tag">Key takeaway</span>
     Reinforcement learning = learning a <b>policy</b> (a habit of acting) from <b>rewards</b>
     (feedback on actions), while balancing <b>exploration</b> against <b>exploitation</b>.
-    Everything else is detail.</div>
+    Sequential RL also needs state transitions and long-term returns.</div>
 </section>
 
 <!-- PART 3 -->
-<section class="part" id="part3">
+<section class="part" id="part3" aria-labelledby="tab3">
   <div class="kicker">Stretch <span class="stretch-badge">optional</span></div>
   <h2>Different visitors, <em>different</em> best banners.</h2>
   <p>So far the agent showed one banner to everyone. Real recommenders use <b>context</b> — something
   known about the situation before choosing. Here the agent sees whether a visitor is <b>new</b> or
-  <b>returning</b>, and keeps a <b>Q-table</b>: a score for each banner <em>per visitor type</em>
-  (“Q” = estimated quality of an action in a situation). Run it and watch two different winners emerge.</p>
+  <b>returning</b>, and keeps a <b>contextual action-value table</b>: a score for each banner <em>per visitor type</em>.
+  This is a contextual bandit, not Q-learning: it estimates immediate rewards and does not bootstrap from future states. Run it and check whether the estimates identify the two different true winners.</p>
   <div class="panel">
+    <div class="slider-row">
+      <label for="seed3">Random seed</label>
+      <input type="number" id="seed3" value="20261016" step="1" inputmode="numeric">
+      <span style="font-size:.82rem;color:var(--text-dim)">Same seed reproduces this contextual run.</span>
+    </div>
     <button class="btn" id="run3">Run 8,000 visitors</button>
     <button class="btn ghost" id="reset3">Clear</button>
     <table id="qtable" style="margin-top:1rem">
-      <tr><th>Visitor type</th><th>A · New arrivals</th><th>B · 50% off</th><th>C · Trending</th><th>Agent shows</th></tr>
+      <caption style="text-align:left;font-weight:600;color:var(--text);margin-bottom:.4rem">Estimated immediate reward for each action and visitor type</caption>
+      <tr><th>Visitor type</th><th>A · New arrivals</th><th>B · 50% off</th><th>C · Trending</th><th>Estimated best action(s)</th></tr>
       <tr><td><b>New</b></td><td class="mono qcell" id="q00">—</td><td class="mono qcell" id="q01">—</td><td class="mono qcell" id="q02">—</td><td id="qb0">—</td></tr>
       <tr><td><b>Returning</b></td><td class="mono qcell" id="q10">—</td><td class="mono qcell" id="q11">—</td><td class="mono qcell" id="q12">—</td><td id="qb1">—</td></tr>
     </table>
+    <div class="readout" id="out3" role="status" aria-live="polite">Set a seed, then press “Run 8,000 visitors”.</div>
   </div>
   <div class="callout"><span class="tag">Where this leads</span>
     Add the idea that your action changes the <em>next</em> situation, and you reach full reinforcement
     learning — optimising long-term reward over a <em>sequence</em> of decisions (chess, robotics, checkout
     flows). The same loop, scaled up, is also how modern chatbots are tuned: <b>RLHF</b> asks people which of two
-    answers they prefer, trains a reward model on those choices, and uses it as the reward. You've just built the engine it's all based on.</div>
+    answers they prefer, trains a reward model on those choices, and uses it as the reward. This introduces the action → reward → update pattern; sequential RL also needs methods for long-term returns.</div>
 </section>
 
 </main>
@@ -205,45 +232,61 @@ footer{border-top:1px solid var(--border);padding:1.5rem 0;color:var(--text-ligh
 <script>
 // ---- tab switching ----
 const tabs=[...document.querySelectorAll('.tab')], parts=[...document.querySelectorAll('.part')];
-tabs.forEach(t=>t.onclick=()=>{tabs.forEach(x=>x.classList.remove('active'));parts.forEach(x=>x.classList.remove('active'));
-  t.classList.add('active');parts[+t.dataset.part].classList.add('active');});
+tabs.forEach(t=>t.onclick=()=>{
+  tabs.forEach(x=>{x.classList.remove('active');x.setAttribute('aria-pressed','false');});
+  parts.forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');t.setAttribute('aria-pressed','true');parts[+t.dataset.part].classList.add('active');
+});
 
-// ---- shared world ----
+// ---- shared world and reproducible random numbers ----
 const NAMES=["A · New arrivals","B · 50% off","C · Trending now"];
 const SUBS=["New arrivals","Up to 50% off","Trending now"];
 const TRUE=[0.05,0.11,0.08];
-const show=i=>Math.random()<TRUE[i]?1:0;
+const randomIndex=(length,rng)=>Math.floor(rng()*length);
+function makeRng(seed){
+  let state=(Math.trunc(Number(seed))>>>0)||0x6D2B79F5;
+  return ()=>{state=(state+0x6D2B79F5)>>>0;let t=state;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return ((t^(t>>>14))>>>0)/4294967296;};
+}
+function readSeed(input){const value=Number(input.value);return Number.isFinite(value)?Math.trunc(value):1;}
+function argmaxIndices(values){const max=Math.max(...values);return values.map((v,i)=>v===max?i:-1).filter(i=>i>=0);}
+function chooseArgmax(values,rng){const best=argmaxIndices(values);return best[randomIndex(best.length,rng)];}
+const showWithRng=(i,rng)=>rng()<TRUE[i]?1:0;
 
 // ---- PART 0 ----
-let shown0=[0,0,0], clicks0=[0,0,0];
+let shown0=[0,0,0], clicks0=[0,0,0], bannerButtons=[];
 const bWrap=document.getElementById('banners0');
+function updateBanner(i){
+  const d=bannerButtons[i],rate=shown0[i]?(clicks0[i]/shown0[i]*100).toFixed(1)+'%':'—';
+  d.innerHTML=`<span class="name">${NAMES[i].split(' · ')[0]}</span><span class="sub">${SUBS[i]}</span>
+      <span class="stat">shown ${shown0[i]} · clicks ${clicks0[i]}<br>observed ${rate}</span>`;
+  d.setAttribute('aria-label',`${NAMES[i]}, shown ${shown0[i]}, clicks ${clicks0[i]}, observed rate ${rate}`);
+}
 function drawBanners(){
-  bWrap.innerHTML='';
-  for(let i=0;i<3;i++){
-    const d=document.createElement('div');d.className='banner';d.dataset.i=i;
-    const rate=shown0[i]?(clicks0[i]/shown0[i]*100).toFixed(1)+'%':'—';
-    d.innerHTML=`<div class="name">${NAMES[i].split(' · ')[0]}</div><div class="sub">${SUBS[i]}</div>
-      <div class="stat">shown ${shown0[i]} · clicks ${clicks0[i]}<br>observed ${rate}</div>`;
-    d.onclick=()=>visit(i);bWrap.appendChild(d);
+  if(!bannerButtons.length){
+    for(let i=0;i<3;i++){
+      const d=document.createElement('button');d.type='button';d.className='banner';d.dataset.i=i;
+      d.onclick=()=>visit(i);bWrap.appendChild(d);bannerButtons.push(d);
+    }
   }
+  for(let i=0;i<3;i++)updateBanner(i);
 }
 function visit(i){
-  const r=show(i);shown0[i]++;clicks0[i]+=r;
-  const card=bWrap.children[i];
+  const r=Math.random()<TRUE[i]?1:0;shown0[i]++;clicks0[i]+=r;
+  const card=bannerButtons[i];
   card.classList.add(r?'flash-click':'flash-noclick');
+  updateBanner(i);
   setTimeout(()=>card.classList.remove('flash-click','flash-noclick'),350);
-  drawBanners();
   document.getElementById('out0').innerHTML=
     `Showed <b>${NAMES[i]}</b> → visitor ${r?'<b>CLICKED ✓</b>':'did not click ✗'}\n`+
     `Totals: shown ${shown0.reduce((a,b)=>a+b)}, clicks ${clicks0.reduce((a,b)=>a+b)}`;
 }
 document.getElementById('auto100').onclick=()=>{
-  for(let k=0;k<100;k++){const i=Math.floor(Math.random()*3);shown0[i]++;clicks0[i]+=show(i);}
+  for(let k=0;k<100;k++){const i=Math.floor(Math.random()*3);shown0[i]++;clicks0[i]+=Math.random()<TRUE[i]?1:0;}
   drawBanners();
   const ts=shown0.reduce((a,b)=>a+b),tc=clicks0.reduce((a,b)=>a+b);
   document.getElementById('out0').innerHTML=
     `Showed 100 banners <b>at random</b>.\nTotal shown ${ts}, clicks ${tc} → click rate <b>${(tc/ts*100).toFixed(1)}%</b>\n`+
-    `Random spreads visitors evenly — it wastes them on weak banners. Part 2 does better.`;
+    `Random spreads traffic across banners in expectation. Part 2 tries to improve on this baseline.`;
 };
 document.getElementById('reset0').onclick=()=>{shown0=[0,0,0];clicks0=[0,0,0];drawBanners();
   document.getElementById('out0').textContent='Click a banner to show it to one visitor…';};
@@ -252,88 +295,102 @@ drawBanners();
 // ---- PART 1: epsilon-greedy + canvas chart ----
 const eps=document.getElementById('eps'),epsval=document.getElementById('epsval');
 eps.oninput=()=>epsval.textContent=(eps.value/100).toFixed(2);
-const cv=document.getElementById('chart'),ctx=cv.getContext('2d');
-function clearChart(){
-  ctx.clearRect(0,0,cv.width,cv.height);
-  const W=cv.width,H=cv.height,pad=42;
-  ctx.strokeStyle='#DDE1E6';ctx.lineWidth=1;
-  ctx.strokeRect(pad,10,W-pad-10,H-pad-10);
-  ctx.fillStyle='#5F6B7A';ctx.font='12px Open Sans';
-  // y axis 0..15%
-  for(let p=0;p<=15;p+=5){const y=10+(H-pad-20)*(1-p/15);
-    ctx.fillText(p+'%',8,y+4);ctx.strokeStyle='#E8EAED';
-    ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(W-10,y);ctx.stroke();}
-  ctx.fillText('visitors →',W/2-30,H-12);
-  // ceiling + baseline
-  const yOf=v=>10+(H-pad-20)*(1-v*100/15);
-  ctx.setLineDash([6,4]);
-  ctx.strokeStyle='#1A7A5C';ctx.beginPath();ctx.moveTo(pad,yOf(0.11));ctx.lineTo(W-10,yOf(0.11));ctx.stroke();
-  ctx.strokeStyle='#C8102E';ctx.beginPath();ctx.moveTo(pad,yOf(0.08));ctx.lineTo(W-10,yOf(0.08));ctx.stroke();
-  ctx.setLineDash([]);
+const cv=document.getElementById('chart'),ctx=cv.getContext('2d'),chartAlt=document.getElementById('chartAlt');
+const chartBox={left:54,right:18,top:18,bottom:44,max:0.15};
+const chartY=v=>chartBox.top+(cv.height-chartBox.top-chartBox.bottom)*(1-v/chartBox.max);
+function clearChart(n=3000){
+  const W=cv.width,H=cv.height,plotW=W-chartBox.left-chartBox.right,plotH=H-chartBox.top-chartBox.bottom;
+  ctx.clearRect(0,0,W,H);ctx.strokeStyle='#DDE1E6';ctx.lineWidth=1;ctx.strokeRect(chartBox.left,chartBox.top,plotW,plotH);
+  ctx.fillStyle='#5F6B7A';ctx.font='12px Open Sans';ctx.textAlign='left';
+  for(let p=0;p<=15;p+=5){const y=chartY(p/100);ctx.fillText(p+'%',8,y+4);ctx.strokeStyle='#E8EAED';
+    ctx.beginPath();ctx.moveTo(chartBox.left,y);ctx.lineTo(W-chartBox.right,y);ctx.stroke();}
+  ctx.textAlign='center';[0,Math.round(n/2),n].forEach(value=>{
+    const x=chartBox.left+plotW*(value/n);ctx.fillText(String(value),x,H-25);ctx.strokeStyle='#E8EAED';
+    ctx.beginPath();ctx.moveTo(x,chartBox.top);ctx.lineTo(x,H-chartBox.bottom);ctx.stroke();});
+  ctx.fillText('visitors',W/2,H-9);
+  ctx.save();ctx.beginPath();ctx.rect(chartBox.left,chartBox.top,plotW,plotH);ctx.clip();
+  ctx.setLineDash([6,4]);ctx.strokeStyle='#1A7A5C';ctx.beginPath();ctx.moveTo(chartBox.left,chartY(0.11));ctx.lineTo(W-chartBox.right,chartY(0.11));ctx.stroke();
+  ctx.strokeStyle='#C8102E';ctx.beginPath();ctx.moveTo(chartBox.left,chartY(0.08));ctx.lineTo(W-chartBox.right,chartY(0.08));ctx.stroke();
+  ctx.setLineDash([]);ctx.restore();
 }
-function runEG(n,e){
+function runEG(n,e,rng){
   let counts=[0,0,0],est=[0,0,0],cum=0,curve=[];
   for(let t=0;t<n;t++){
     let c;
-    if(t<3)c=t;                                  // warm-up: show each banner once
-    else if(Math.random()<e)c=Math.floor(Math.random()*3);
-    else c=est.indexOf(Math.max(...est));
-    const r=show(c);counts[c]++;est[c]+=(r-est[c])/counts[c];cum+=r;
-    curve.push(cum/(t+1));
+    if(t<3 && e<1)c=t; // warm-up except when ε=1, which is fully random from visitor 1
+    else if(rng()<e)c=randomIndex(3,rng);
+    else c=chooseArgmax(est,rng);
+    const r=showWithRng(c,rng);counts[c]++;est[c]+=(r-est[c])/counts[c];cum+=r;curve.push(cum/(t+1));
   }
-  return {est,counts,curve};
+  return {est,counts,curve,estimatedBest:argmaxIndices(est)};
 }
 function plotCurve(curve){
-  const W=cv.width,H=cv.height,pad=42,n=curve.length;
-  const xOf=i=>pad+(W-pad-10)*(i/(n-1));
-  const yOf=v=>10+(H-pad-20)*(1-v*100/15);
+  const W=cv.width,n=curve.length,plotW=W-chartBox.left-chartBox.right;
+  const xOf=i=>chartBox.left+plotW*(i/(n-1));
+  ctx.save();ctx.beginPath();ctx.rect(chartBox.left,chartBox.top,plotW,cv.height-chartBox.top-chartBox.bottom);ctx.clip();
   ctx.strokeStyle='#2C5697';ctx.lineWidth=2;ctx.beginPath();
-  curve.forEach((v,i)=>{i?ctx.lineTo(xOf(i),yOf(v)):ctx.moveTo(xOf(i),yOf(v));});
-  ctx.stroke();
+  curve.forEach((v,i)=>{i?ctx.lineTo(xOf(i),chartY(v)):ctx.moveTo(xOf(i),chartY(v));});ctx.stroke();ctx.restore();
+}
+function trafficText(counts,n){return counts.map((count,i)=>`${NAMES[i].split(' · ')[0]} ${count} (${(count/n*100).toFixed(1)}%)`).join(' · ');}
+function idealExpectedRate(e){return (1-e)*TRUE[1]+e*(TRUE.reduce((a,b)=>a+b,0)/TRUE.length);}
+function updateChartAlt(n,final,e){
+  const expected=idealExpectedRate(e);
+  chartAlt.textContent=`Text alternative: cumulative click rate over ${n} visitors ended at ${(final*100).toFixed(2)}%. Dashed reference rates are expected random ${ (TRUE.reduce((a,b)=>a+b,0)/3*100).toFixed(2)}% and expected oracle ${ (TRUE[1]*100).toFixed(2)}%; the ideal learned-policy expectation for ε=${e.toFixed(2)} is ${(expected*100).toFixed(2)}%. These are expectations, not ceilings.`;
+  cv.setAttribute('aria-label',`Cumulative click rate chart over ${n} visitors, ending at ${(final*100).toFixed(2)} percent`);
+}
+function singleRunOutput(result,e,n,seed){
+  const final=result.curve[result.curve.length-1],expected=idealExpectedRate(e),best=result.estimatedBest.map(i=>NAMES[i].split(' · ')[0]).join(' / '),includesB=result.estimatedBest.includes(1);
+  let interpretation;
+  if(e===1) interpretation='ε = 1.00 is fully random: estimates can identify the best banner, but the policy ignores them when choosing.';
+  else if(includesB) interpretation=`B is among the estimated best action(s) in this finite run; that does not guarantee future reward or a rising line.`;
+  else interpretation=`B is not the estimated best in this finite run; with low ε the agent can settle on a lucky mediocre estimate.`;
+  document.getElementById('out1').innerHTML=
+    `ε = <b>${e.toFixed(2)}</b> · ${n} visitors · seed <b>${seed}</b>\n`+
+    `Actual click rate: <b>${(final*100).toFixed(2)}%</b>\n`+
+    `Ideal learned-policy expected rate: <b>${(expected*100).toFixed(2)}%</b> = (1−ε)×11% + ε×8% (an expectation, not a ceiling)\n`+
+    `Estimated rates → A ${(result.est[0]*100).toFixed(1)}% · B ${(result.est[1]*100).toFixed(1)}% · C ${(result.est[2]*100).toFixed(1)}%\n`+
+    `Traffic → ${trafficText(result.counts,n)}\n`+
+    `Estimated best action(s): <b>${best}</b> · true best: B (11%)\n${interpretation}`;
+  updateChartAlt(n,final,e);
 }
 document.getElementById('run1').onclick=()=>{
-  const e=eps.value/100,n=3000;clearChart();
-  const {est,counts,curve}=runEG(n,e);plotCurve(curve);
-  const final=curve[curve.length-1];
-  document.getElementById('out1').innerHTML=
-    `ε = <b>${e.toFixed(2)}</b> · ${n} visitors\n`+
-    `Final click rate: <b>${(final*100).toFixed(2)}%</b>  (random ≈ 8%, ceiling = 11%)\n`+
-    `Estimated rates → A ${(est[0]*100).toFixed(1)}% · B ${(est[1]*100).toFixed(1)}% · C ${(est[2]*100).toFixed(1)}%\n`+
-    `Times shown    → A ${counts[0]} · B ${counts[1]} · C ${counts[2]}\n`+
-    (counts[1]>=counts[0]&&counts[1]>=counts[2]
-      ?`The agent found B (the real winner) and leaned into it. ✓`
-      :`Hmm — the agent did NOT settle on B. With low ε it can get stuck. Run again or raise ε a little.`);
+  const e=eps.value/100,n=3000,seed=readSeed(document.getElementById('seed1')),result=runEG(n,e,makeRng(seed));
+  clearChart(n);plotCurve(result.curve);singleRunOutput(result,e,n,seed);
 };
-document.getElementById('reset1').onclick=()=>{clearChart();
+document.getElementById('compare1').onclick=()=>{
+  const e=eps.value/100,n=3000,base=readSeed(document.getElementById('seed1')),rates=[],runs=50;let identified=0;
+  for(let i=0;i<runs;i++){const result=runEG(n,e,makeRng(base+i*7919));rates.push(result.curve[result.curve.length-1]);if(result.estimatedBest.includes(1))identified++;}
+  const mean=rates.reduce((a,b)=>a+b,0)/runs,std=Math.sqrt(rates.reduce((a,b)=>a+(b-mean)**2,0)/runs);
+  document.getElementById('out1').innerHTML=
+    `ε = <b>${e.toFixed(2)}</b> · ${runs} finite runs × ${n} visitors · base seed <b>${base}</b>\n`+
+    `Actual click rate across runs: <b>${(mean*100).toFixed(2)}% ± ${(std*100).toFixed(2)}%</b> (mean ± population SD)\n`+
+    `B was estimated best (including ties) in <b>${identified}/${runs}</b> runs (${(identified/runs*100).toFixed(0)}%).\n`+
+    `Ideal learned-policy expected rate: <b>${(idealExpectedRate(e)*100).toFixed(2)}%</b> = (1−ε)×11% + ε×8%; reference values are expectations, not realized ceilings.`+
+    (e===1?'\nε = 1.00 is fully random: it can estimate the best banner accurately but does not exploit that knowledge.':'');
+};
+document.getElementById('reset1').onclick=()=>{clearChart();chartAlt.textContent='Text alternative: no simulation has been run. The chart will show actual cumulative click rate against the expected random rate (8%) and the expected oracle rate (11%).';cv.setAttribute('aria-label','Click-rate chart for the latest finite simulation');
   document.getElementById('out1').textContent='Set ε, then press “Run 3,000 visitors”.';};
 clearChart();
 
 // ---- PART 3: contextual bandit ----
-const TRUE2=[[0.04,0.12,0.06],[0.10,0.05,0.13]];
-const TYPES=["new","returning"];
+const TRUE2=[[0.04,0.12,0.06],[0.10,0.05,0.13]],TYPES=["new","returning"];
 document.getElementById('run3').onclick=()=>{
-  let Q=[[0,0,0],[0,0,0]],C=[[0,0,0],[0,0,0]],n=8000,e=0.1;
+  let values=[[0,0,0],[0,0,0]],counts=[[0,0,0],[0,0,0]],n=8000,e=0.1,rng=makeRng(readSeed(document.getElementById('seed3')));
   for(let t=0;t<n;t++){
-    const vt=Math.floor(Math.random()*2);
-    let c;
-    if(Math.random()<e)c=Math.floor(Math.random()*3);
-    else c=Q[vt].indexOf(Math.max(...Q[vt]));
-    const r=Math.random()<TRUE2[vt][c]?1:0;
-    C[vt][c]++;Q[vt][c]+=(r-Q[vt][c])/C[vt][c];
+    const vt=randomIndex(2,rng),c=rng()<e?randomIndex(3,rng):chooseArgmax(values[vt],rng),r=rng()<TRUE2[vt][c]?1:0;
+    counts[vt][c]++;values[vt][c]+=(r-values[vt][c])/counts[vt][c];
   }
+  const bestNames=[];
   for(let vt=0;vt<2;vt++){
-    const best=Q[vt].indexOf(Math.max(...Q[vt]));
-    for(let b=0;b<3;b++){
-      const cell=document.getElementById('q'+vt+b);
-      cell.textContent=(Q[vt][b]*100).toFixed(1)+'%';
-      cell.classList.toggle('qbest',b===best);
-    }
-    document.getElementById('qb'+vt).innerHTML='<b>'+NAMES[best].split(' · ')[0]+'</b>';
+    const best=argmaxIndices(values[vt]);best.forEach(b=>bestNames.push(`${TYPES[vt]}: ${NAMES[b].split(' · ')[0]}`));
+    for(let b=0;b<3;b++){const cell=document.getElementById('q'+vt+b);cell.textContent=(values[vt][b]*100).toFixed(1)+'%';cell.classList.toggle('qbest',best.includes(b));}
+    document.getElementById('qb'+vt).innerHTML=best.map(b=>`<b>${NAMES[b].split(' · ')[0]}</b>`).join(' / ');
   }
+  document.getElementById('out3').innerHTML=`Seeded contextual-bandit run complete.\nEstimated best action(s): <b>${bestNames.join(' · ')}</b>\nTrue best actions: New → B (12%), Returning → C (13%). Estimates are immediate rewards; this table is not Q-learning.`;
 };
 document.getElementById('reset3').onclick=()=>{
-  for(let vt=0;vt<2;vt++){for(let b=0;b<3;b++){const c=document.getElementById('q'+vt+b);c.textContent='—';c.classList.remove('qbest');}
-    document.getElementById('qb'+vt).textContent='—';}
+  for(let vt=0;vt<2;vt++){for(let b=0;b<3;b++){const c=document.getElementById('q'+vt+b);c.textContent='—';c.classList.remove('qbest');}document.getElementById('qb'+vt).textContent='—';}
+  document.getElementById('out3').textContent='Set a seed, then press “Run 8,000 visitors”.';
 };
 </script>
 </body>

@@ -4,7 +4,10 @@
 even do it in the first few minutes of the session if you're short on time.
 
 This warm-up has no code. Its only job is to get one idea into your head before you build:
-**RL learns without an answer key.** Everything in the session hangs off that.
+**RL learns by choosing actions, receiving rewards, and updating future choices.** The
+absence of an answer key can motivate an RL problem, but it is not enough by itself.
+Today's example is a **multi-armed bandit** — a simple, stateless RL setting with one
+choice and one reward per round.
 
 | Step | Time | What you do |
 |---|---|---|
@@ -24,10 +27,11 @@ watch what changes:
 
 - Set it near **0** — the agent almost never tries alternatives.
 - Set it near **1** — the agent picks at random every time.
-- Find the **sweet spot** in between where the agent learns fastest.
+- Compare a few values in between and notice that there is no universal **sweet spot**:
+  the best setting depends on the cost of exploration and the time available to learn.
 
 You don't need to understand *why* yet. Just build a feel for "more exploring" vs "more
-using what I already know."
+using what I already know," and remember that random clicks make individual runs vary.
 
 ---
 
@@ -35,11 +39,12 @@ using what I already know."
 
 Jot a sentence for each — on paper, in a notes app, or just in your head.
 
-**Q1. Every model you built in L01–L10 learned from labelled examples — an answer key.**
+**Q1. Most models you built in L01–L10 predicted a target from fixed examples.**
 
-This homepage problem has no answer key: nobody can tell you in advance which banner is
-"correct" for a visitor. So how could a system *possibly* learn the best banner? Take a
-guess before the session answers it.
+This homepage problem has no labelled "correct banner" for a visitor, and the system's
+choice determines which click feedback it gets. (The absence of labels alone would not
+settle the method.) So how could a system *possibly* learn the best banner? Take a guess
+before the session answers it.
 
 **Q2. There's a cost to trying a banner you're unsure about.**
 
@@ -56,7 +61,7 @@ mind; by the end you'll see they all run the same loop.
 
 ## Bring to the session
 
-- Your gut answer to Q1 — how *could* a system learn with no labels?
+- Your gut answer to Q1 — how *could* a system learn without a labelled correct-banner target?
 - One thing the explainer did that surprised you.
 
 **Ran out of time?** Just open the explainer for two minutes and drag the dial. That single
