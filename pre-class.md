@@ -14,15 +14,16 @@ before you start the steps below.
 
 | Step | Time | What you do |
 |---|---|---|
-| **1. Play** | ~8 min | Open the interactive explainer and turn the dial |
+| **1. Play** | ~8 min | Open the [interactive explainer](https://flexfengfeng.github.io/L11-reinforcement-learning/) and turn the dial |
 | **2. Reflect** | ~5 min | Three short questions below |
 
 ---
 
 ## Step 1 — Play with the explainer (~8 min)
 
-Open **`docs/index.html`** in any web browser (just double-click it). There's
-nothing to install.
+Open the interactive explainer in any web browser:
+**https://flexfengfeng.github.io/L11-reinforcement-learning/**. There's nothing to
+install. (Offline? Double-click **`docs/index.html`** in the repo instead.)
 
 You'll see NorthStar's homepage choosing between three product banners. Each banner has a
 hidden true click rate the agent can't see. Click through the **1 · The problem** tab, then

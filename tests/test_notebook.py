@@ -9,15 +9,26 @@ import unittest
 import numpy as np
 
 
+def code_cell(notebook, marker):
+    """Return the source of the one code cell containing `marker`.
+
+    Looked up by content, not position, so inserted markdown cells cannot break the tests.
+    """
+    matches = ["".join(cell["source"]) for cell in notebook["cells"]
+               if cell["cell_type"] == "code" and marker in "".join(cell["source"])]
+    assert len(matches) == 1, f"expected one code cell containing {marker!r}, found {len(matches)}"
+    return matches[0]
+
+
 def load_algorithms():
     notebook = json.loads((Path(__file__).resolve().parents[1] /
                            "notebooks/01_rl_recommender_codealong.ipynb").read_text())
     namespace = {}
     with contextlib.redirect_stdout(io.StringIO()):
-        for index in (1, 3):
-            exec("".join(notebook["cells"][index]["source"]), namespace)
-        for index in (5, 8, 21):
-            tree = ast.parse("".join(notebook["cells"][index]["source"]))
+        for marker in ("import numpy as np", "def validate_world"):
+            exec(code_cell(notebook, marker), namespace)
+        for marker in ("def run_random", "def run_epsilon_greedy", "def run_contextual"):
+            tree = ast.parse(code_cell(notebook, marker))
             tree.body = [node for node in tree.body if isinstance(node, ast.FunctionDef)
                          or (isinstance(node, ast.Assign) and any(
                              isinstance(target, ast.Name) and target.id in
