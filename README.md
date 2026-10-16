@@ -7,7 +7,7 @@
 A short, optional introduction to **reinforcement learning (RL)** — the one major
 branch of machine learning the main course (L01–L10) deliberately left out. Several
 learners asked for "just enough RL to know what it is and how it differs from what we've
-built." This lesson is that: a single hands-on code-along (60–90 minutes — Parts 1–4 are the ~70-minute core, Part 5 is an optional stretch) where you build a
+built." This lesson is that: a single hands-on code-along (80–110 minutes — ~20 minutes of key ideas on the slides, then Parts 1–4 as the ~70-minute notebook core; Part 5 is an optional ~20-minute stretch) where you build a
 recommender that learns from clicks, plus an interactive explainer you can play with.
 
 It is **lighter than L01–L10 on purpose.** There is no assignment and no quiz — the learner materials are one notebook, one interactive page, and short reference notes. Treat it as a guided taster, not a full
@@ -34,7 +34,7 @@ chooses which banner to show, and that choice determines which feedback it gets.
 By the end you will be able to:
 
 1. **Name the RL loop** — agent → action → reward → update, repeated thousands of times.
-2. **Explain the six core words** — agent, environment, action, reward, policy, value — each tied to code you actually ran.
+2. **Explain the seven core words** — agent, environment, state, action, reward, policy, value — each tied to code you actually ran (state is "nothing yet" in the bandit, until Part 5 adds visitor type).
 3. **Describe the explore-vs-exploit trade-off** — and point to the single dial (`epsilon`) that controls it.
 4. **Say clearly how this bandit differs from supervised learning** — the agent chooses an action, receives feedback for that choice, and improves its future choices.
 5. **(Optional)** Recognise a **contextual bandit** and its context-action value table, and see how the same loop scales up to sequential RL and to RLHF behind modern chatbots.
@@ -60,7 +60,7 @@ first, then reflect, then name the theory, then experiment.
 | `pre-class.md` | ~15-min warm-up before the session |
 | `lesson.md` | Short reference: overview, key takeaways, review questions, where RL goes next |
 | `notebooks/01_rl_recommender_codealong.ipynb` | The lesson — build a recommender that learns from clicks |
-| `interactive/rl_explorer.html` | Interactive explainer — drag the `epsilon` dial and watch explore vs exploit live |
+| `docs/index.html` | Interactive explainer — drag the `epsilon` dial and watch explore vs exploit live |
 
 
 ## How to run
@@ -83,7 +83,7 @@ seconds on any laptop.
 The slide deck is instructor-only and is not distributed with this repository. The
 notebook, this reference, and the interactive page are the learner materials.
 
-Prefer to explore without code first? Open `interactive/rl_explorer.html` in any browser.
+Prefer to explore without code first? Open `docs/index.html` in any browser.
 
 ## Checks
 

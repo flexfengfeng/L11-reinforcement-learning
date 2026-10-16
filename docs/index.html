@@ -154,7 +154,9 @@ footer{border-top:1px solid var(--border);padding:1.5rem 0;color:var(--text-ligh
   <div class="callout"><span class="tag">Try this</span>
     Run ε = 0 a few times — after showing each banner once, the agent can lock onto a banner whose first
     outcome was lucky, and the line can stay flat and low. Even ε = 0.10 can miss B in a finite run, because
-    B (11%) and C (8%) are close. That fragility is why a little exploration can be worth paying for.</div>
+    B (11%) and C (8%) are close. That fragility is why a little exploration can be worth paying for.
+    <br><br>This page is a quick browser simulation (3,000 visitors, 50 runs, population SD), so its numbers will not
+    match the notebook's 5,000-visitor runs and 20-seed comparison. The banner rates (5% / 11% / 8%) are the same.</div>
 </section>
 
 <!-- PART 2 -->
@@ -172,6 +174,7 @@ footer{border-top:1px solid var(--border);padding:1.5rem 0;color:var(--text-ligh
     <tr><th>Term</th><th>Plain English</th><th>In the banner demo</th></tr>
     <tr><td><b>Agent</b></td><td>The learner / decision-maker</td><td>The ε-greedy logic</td></tr>
     <tr><td><b>Environment</b></td><td>The world it acts on</td><td>NorthStar visitors</td></tr>
+    <tr><td><b>State</b></td><td>What the agent sees before it chooses</td><td>Nothing yet — every visitor looks the same (Part 4 adds visitor type)</td></tr>
     <tr><td><b>Action</b></td><td>A choice it can make</td><td>Show banner A, B or C</td></tr>
     <tr><td><b>Reward</b></td><td>Feedback — bigger is better</td><td>1 for a click, 0 for none</td></tr>
     <tr><td><b>Policy</b></td><td>Its strategy for choosing</td><td>“90% best, 10% explore”</td></tr>
@@ -182,7 +185,7 @@ footer{border-top:1px solid var(--border);padding:1.5rem 0;color:var(--text-ligh
   and you keep gambling on weak options. ε is literally the knob for this balance.</p>
   <h3>How is this different from supervised learning?</h3>
   <table>
-    <tr><th></th><th>Supervised (L01–L04)</th><th>Reinforcement (today)</th></tr>
+    <tr><th></th><th>Supervised (most of L01–L10)</th><th>Reinforcement (today)</th></tr>
     <tr><td><b>Given</b></td><td>Examples with correct target labels</td><td>No correct-action label; observe a reward for the action selected</td></tr>
     <tr><td><b>Feedback</b></td><td>“The right label was X”</td><td>“That choice earned 1” (never the best)</td></tr>
     <tr><td><b>Sarah example</b></td><td>Classify a review +/–</td><td>Learn which banner earns clicks</td></tr>

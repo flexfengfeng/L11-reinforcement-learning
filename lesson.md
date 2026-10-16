@@ -12,7 +12,7 @@ This document is a **short reference** — the lesson itself is taught in the no
 
 | Stage | Where to go |
 |---|---|
-| **Warm-up** | `pre-class.md` + `interactive/rl_explorer.html` |
+| **Warm-up** | `pre-class.md` + `docs/index.html` |
 | **Part 1 — Do it** | `notebooks/01_rl_recommender_codealong.ipynb` (build a random baseline, then an ε-greedy agent) |
 | **Part 2 — Look at it** | same notebook — reflect on what happened |
 | **Part 3 — Name it** | same notebook — the theory, each term tied to your code |
@@ -35,7 +35,7 @@ The lesson builds that system twice. First a **random baseline** that shows bann
 
 1. **This lesson is a multi-armed bandit.** It is a stateless, one-step RL problem: the agent chooses one banner, gets a click reward, updates its estimate, and starts the next round. Full RL also handles changing states and long-term consequences.
 2. **RL is an action-feedback loop.** An agent observes its situation, takes an action, receives a reward, and updates how it will act next time — repeated thousands of times. The absence of a ready-made answer key can be a clue, but it is not a definition: offline RL can learn from logged trajectories, and supervised models can predict rewards or preferences.
-3. **Six words cover the vocabulary.** *Agent* (the learner), *environment* (the world it acts on), *action* (what it does), *reward* (the feedback), *policy* (its strategy for choosing), and *value* (its estimate of how good a choice is). Each maps directly to a line in the banner code.
+3. **Seven words cover the vocabulary.** *Agent* (the learner), *environment* (the world it acts on), *state* (what it sees before choosing), *action* (what it does), *reward* (the feedback), *policy* (its strategy for choosing), and *value* (its estimate of how good a choice is). Each maps to the banner code; *state* is "nothing yet" in the bandit, because every visitor looks the same until Part 5 adds visitor type.
 4. **Explore vs. exploit is a central tension.** *Exploit* = use what you know to get reward now; *explore* = try actions to gain information, potentially sacrificing immediate reward. Exploring can also earn reward; the trade-off is how much to prioritize information.
 5. **`epsilon` is the dial for that trade-off, not a universal setting.** `epsilon = 0.1` means explore 10% of the time, exploit the rest. Too low (`0`) and the agent can lock onto a banner that got lucky early; too high (`1.0`) is the random baseline. The best setting depends on the cost of exploration, the time horizon, and whether rates change. In this stationary toy world, values around `0.05`–`0.1` are useful examples, not a general rule. With perfect estimates, the 11% oracle that always chooses B becomes about **10.7%** at `epsilon = 0.1`: 90% exploitation plus 10% random choices.
 6. **Results are stochastic.** A single run can look unusually good or bad because clicks and early choices are random. Compare independent seeds and report a mean, a standard deviation, and how often the agent identifies the best banner before drawing conclusions.
